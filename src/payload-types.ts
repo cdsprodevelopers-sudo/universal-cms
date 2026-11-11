@@ -69,6 +69,9 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    websites: Website;
+    'website-memberships': WebsiteMembership;
+    pages: Page;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,6 +81,9 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    websites: WebsitesSelect<false> | WebsitesSelect<true>;
+    'website-memberships': WebsiteMembershipsSelect<false> | WebsiteMembershipsSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -123,6 +129,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  platformRole: 'super-admin' | 'user';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -161,6 +168,116 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    medium?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "websites".
+ */
+export interface Website {
+  id: number;
+  name: string;
+  slug: string;
+  domain: string;
+  description?: string | null;
+  status: 'development' | 'active' | 'inactive';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "website-memberships".
+ */
+export interface WebsiteMembership {
+  id: number;
+  user: number | User;
+  website: number | Website;
+  role: 'administrator' | 'editor' | 'author' | 'contributor' | 'subscriber';
+  status: 'invited' | 'active' | 'suspended';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  website?: (number | null) | Website;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  title: string;
+  slug: string;
+  pageType: 'home' | 'about' | 'contact' | 'other';
+  sections?:
+    | {
+        sectionKey?: string | null;
+        eyebrow?: string | null;
+        heading?: string | null;
+        headingHighlight?: string | null;
+        body?: string | null;
+        secondaryBody?: string | null;
+        image?: (number | null) | Media;
+        imageURL?: string | null;
+        imageAlt?: string | null;
+        items?:
+          | {
+              icon?: string | null;
+              title?: string | null;
+              description?: string | null;
+              linkLabel?: string | null;
+              linkURL?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        primaryButtonLabel?: string | null;
+        primaryButtonURL?: string | null;
+        secondaryButtonLabel?: string | null;
+        secondaryButtonURL?: string | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'contentSection';
+      }[]
+    | null;
+  seo?: {
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    canonicalURL?: string | null;
+    noIndex?: boolean | null;
+  };
+  status: 'draft' | 'published';
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -193,6 +310,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'websites';
+        value: number | Website;
+      } | null)
+    | ({
+        relationTo: 'website-memberships';
+        value: number | WebsiteMembership;
+      } | null)
+    | ({
+        relationTo: 'pages';
+        value: number | Page;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -241,6 +370,7 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  platformRole?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -276,6 +406,110 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        medium?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "websites_select".
+ */
+export interface WebsitesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  domain?: T;
+  description?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "website-memberships_select".
+ */
+export interface WebsiteMembershipsSelect<T extends boolean = true> {
+  user?: T;
+  website?: T;
+  role?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  website?: T;
+  content?: T;
+  title?: T;
+  slug?: T;
+  pageType?: T;
+  sections?:
+    | T
+    | {
+        contentSection?:
+          | T
+          | {
+              sectionKey?: T;
+              eyebrow?: T;
+              heading?: T;
+              headingHighlight?: T;
+              body?: T;
+              secondaryBody?: T;
+              image?: T;
+              imageURL?: T;
+              imageAlt?: T;
+              items?:
+                | T
+                | {
+                    icon?: T;
+                    title?: T;
+                    description?: T;
+                    linkLabel?: T;
+                    linkURL?: T;
+                    id?: T;
+                  };
+              primaryButtonLabel?: T;
+              primaryButtonURL?: T;
+              secondaryButtonLabel?: T;
+              secondaryButtonURL?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        canonicalURL?: T;
+        noIndex?: T;
+      };
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
